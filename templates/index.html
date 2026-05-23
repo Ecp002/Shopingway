@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esha's Fashion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scrollProgress"></div>
+<!-- CURSOR GLOW -->
+<div class="cursor-glow" id="cursorGlow"></div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+        <h3>Your Cart</h3>
+        <button class="cart-close" onclick="closeCart()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="cart-items" id="cartItems">
+        <div class="cart-empty" id="cartEmpty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <p>Your cart is empty</p>
+        </div>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+        <div class="coupon-row">
+            <input type="text" id="couponInput" class="coupon-input" placeholder="Enter coupon code">
+            <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+        </div>
+        <div class="discount-row" id="discountRow" style="display:none">
+            <span>Discount (15%)</span>
+            <span class="discount-amount" id="discountAmount">-$0.00</span>
+        </div>
+        <div class="cart-total">
+            <span>Total</span>
+            <span class="total-price" id="totalPrice">$0.00</span>
+        </div>
+        <button class="btn btn-primary checkout-btn" onclick="openCheckout()">Checkout</button>
+    </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutOverlay" onclick="closeCheckout()"></div>
+<div class="checkout-modal" id="checkoutModal">
+    <div class="modal-header">
+        <h3>Complete Your Order</h3>
+        <button class="cart-close" onclick="closeCheckout()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="modal-section">
+            <h4>Shipping Details</h4>
+            <div class="form-row">
+                <input type="text" class="form-input" placeholder="First Name" id="firstName">
+                <input type="text" class="form-input" placeholder="Last Name" id="lastName">
+            </div>
+            <input type="email" class="form-input full" placeholder="Email Address" id="email">
+            <input type="text" class="form-input full" placeholder="Street Address" id="address">
+            <div class="form-row">
+                <input type="text" class="form-input" placeholder="City" id="city">
+                <input type="text" class="form-input" placeholder="ZIP Code" id="zip">
+            </div>
+        </div>
+        <div class="modal-section">
+            <h4>Payment</h4>
+            <input type="text" class="form-input full" placeholder="Card Number" id="cardNum" maxlength="19" oninput="formatCard(this)">
+            <div class="form-row">
+                <input type="text" class="form-input" placeholder="MM / YY" id="expiry" maxlength="7" oninput="formatExpiry(this)">
+                <input type="text" class="form-input" placeholder="CVV" id="cvv" maxlength="3">
+            </div>
+        </div>
+        <div class="order-summary" id="orderSummary"></div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" style="width:100%" onclick="placeOrder()">Place Order</button>
+    </div>
+</div>
+
+<!-- ORDER SUCCESS MODAL -->
+<div class="modal-overlay" id="successOverlay"></div>
+<div class="success-modal" id="successModal">
+    <div class="success-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h3>Order Placed!</h3>
+    <p>Thank you for shopping with Esha's Fashion. Your order is confirmed and will arrive in 3-5 days.</p>
+    <button class="btn btn-primary" onclick="closeSuccess()">Continue Shopping</button>
+</div>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar">
+    <span class="marquee-text">FREE SHIPPING ON ORDERS OVER $100 &nbsp;&nbsp;&nbsp;&nbsp; NEW DROP EVERY FRIDAY &nbsp;&nbsp;&nbsp;&nbsp; USE CODE ESHH1008 FOR 15% OFF &nbsp;&nbsp;&nbsp;&nbsp; FREE SHIPPING ON ORDERS OVER $100 &nbsp;&nbsp;&nbsp;&nbsp; NEW DROP EVERY FRIDAY &nbsp;&nbsp;&nbsp;&nbsp; USE CODE ESHH1008 FOR 15% OFF</span>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+    <h2 class="logo">Esha's Fashion</h2>
+    <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#products">Products</a></li>
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+        <button class="icon-btn" aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button class="icon-btn cart-btn" onclick="openCart()" aria-label="Cart">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Cart <span class="cart-count" id="cartCount">0</span>
+        </button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<header>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="hero">
+        <div class="hero-badge">New Collection 2025</div>
+        <h1>Elegant Fashion<br><span class="gradient-text">For Modern Souls</span></h1>
+        <p>Luxury aesthetics crafted with elegance, beauty and timeless fashion.</p>
+        <div class="hero-btns">
+            <a href="#products" class="btn btn-primary">Explore Collection</a>
+            <a href="#about" class="btn btn-outline">Our Story</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat"><span class="stat-num" data-target="10">0</span><span class="stat-suffix">K+</span><span class="stat-label">Happy Customers</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat"><span class="stat-num" data-target="500">0</span><span class="stat-suffix">+</span><span class="stat-label">Styles</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat"><span class="stat-num" data-target="4.9">0</span><span class="stat-label">Rating</span></div>
+        </div>
+    </div>
+    <div class="hero-scroll-hint">
+        <span>scroll down</span>
+        <div class="scroll-arrow"></div>
+    </div>
+</header>
+
+<!-- CATEGORIES -->
+<section class="categories" id="categories">
+    <h2 class="section-title reveal-title">Shop by <span class="gradient-text">Category</span></h2>
+    <p class="section-sub" data-aos="fade-up">Find your style in every collection</p>
+    <div class="category-grid">
+        <div class="cat-card" data-aos="fade-up" data-delay="0" onclick="filterProducts('dresses')">
+            <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=200&h=200&fit=crop" alt="Dresses"></div>
+            <span>Dresses</span>
+        </div>
+        <div class="cat-card" data-aos="fade-up" data-delay="0.08" onclick="filterProducts('footwear')">
+            <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200&h=200&fit=crop" alt="Footwear"></div>
+            <span>Footwear</span>
+        </div>
+        <div class="cat-card" data-aos="fade-up" data-delay="0.16" onclick="filterProducts('bags')">
+            <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200&h=200&fit=crop" alt="Bags"></div>
+            <span>Bags</span>
+        </div>
+        <div class="cat-card" data-aos="fade-up" data-delay="0.24" onclick="filterProducts('jewelry')">
+            <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200&h=200&fit=crop" alt="Jewelry"></div>
+            <span>Jewelry</span>
+        </div>
+        <div class="cat-card" data-aos="fade-up" data-delay="0.32" onclick="filterProducts('outerwear')">
+            <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=200&h=200&fit=crop" alt="Outerwear"></div>
+            <span>Outerwear</span>
+        </div>
+        <div class="cat-card" data-aos="fade-up" data-delay="0.4" onclick="filterProducts('all')">
+            <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&h=200&fit=crop" alt="All"></div>
+            <span>View All</span>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURED PRODUCTS -->
+<section class="products" id="products">
+    <div class="section-header">
+        <h2 class="section-title reveal-title">Featured <span class="gradient-text">Collection</span></h2>
+        <p class="section-sub" data-aos="fade-up">Handpicked pieces that define the season</p>
+    </div>
+    <div class="filter-tabs" data-aos="fade-up">
+        <button class="filter-tab active" onclick="filterProducts('all',this)">All</button>
+        <button class="filter-tab" onclick="filterProducts('dresses',this)">Dresses</button>
+        <button class="filter-tab" onclick="filterProducts('outerwear',this)">Outerwear</button>
+        <button class="filter-tab" onclick="filterProducts('bags',this)">Bags</button>
+        <button class="filter-tab" onclick="filterProducts('jewelry',this)">Jewelry</button>
+    </div>
+    <div class="product-container" id="productContainer">
+        <div class="card" data-aos="fade-up" data-delay="0" data-category="dresses">
+            <div class="card-badge">Bestseller</div>
+            <div class="card-img-wrap">
+                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=687&auto=format&fit=crop" alt="Luxury Wrap Dress">
+                <div class="card-overlay">
+                    <button class="quick-add" onclick="addToCart('Luxury Wrap Dress',129,'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=100&auto=format&fit=crop')">Quick Add</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-meta"><span class="card-category">Dresses</span><div class="card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+                <h3>Luxury Wrap Dress</h3>
+                <p>Premium silk-blend wrap with elegant drape and timeless silhouette.</p>
+                <div class="card-footer">
+                    <span class="price">$129.00</span>
+                    <button class="add-cart-btn" onclick="addToCart('Luxury Wrap Dress',129,'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=100&auto=format&fit=crop')">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="card" data-aos="fade-up" data-delay="0.1" data-category="dresses">
+            <div class="card-badge new">New</div>
+            <div class="card-img-wrap">
+                <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=687&auto=format&fit=crop" alt="Modern Slip Dress">
+                <div class="card-overlay">
+                    <button class="quick-add" onclick="addToCart('Modern Slip Dress',99,'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=100&auto=format&fit=crop')">Quick Add</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-meta"><span class="card-category">Dresses</span><div class="card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+                <h3>Modern Slip Dress</h3>
+                <p>Minimal satin slip blended with classy, effortless styling.</p>
+                <div class="card-footer">
+                    <span class="price">$99.00</span>
+                    <button class="add-cart-btn" onclick="addToCart('Modern Slip Dress',99,'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=100&auto=format&fit=crop')">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="card" data-aos="fade-up" data-delay="0.2" data-category="dresses">
+            <div class="card-badge hot">Hot</div>
+            <div class="card-img-wrap">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=687&auto=format&fit=crop" alt="Exclusive Maxi Dress">
+                <div class="card-overlay">
+                    <button class="quick-add" onclick="addToCart('Exclusive Maxi Dress',149,'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=100&auto=format&fit=crop')">Quick Add</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-meta"><span class="card-category">Dresses</span><div class="card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+                <h3>Exclusive Maxi Dress</h3>
+                <p>Floor-length statement piece designed for confidence and presence.</p>
+                <div class="card-footer">
+                    <span class="price">$149.00</span>
+                    <button class="add-cart-btn" onclick="addToCart('Exclusive Maxi Dress',149,'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=100&auto=format&fit=crop')">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="card" data-aos="fade-up" data-delay="0.1" data-category="outerwear">
+            <div class="card-img-wrap">
+                <img src="https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=687&auto=format&fit=crop" alt="Oversized Trench Coat">
+                <div class="card-overlay">
+                    <button class="quick-add" onclick="addToCart('Oversized Trench Coat',219,'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=100&auto=format&fit=crop')">Quick Add</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-meta"><span class="card-category">Outerwear</span><div class="card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+                <h3>Oversized Trench Coat</h3>
+                <p>Classic structured trench with a modern oversized cut and belt detail.</p>
+                <div class="card-footer">
+                    <span class="price">$219.00</span>
+                    <button class="add-cart-btn" onclick="addToCart('Oversized Trench Coat',219,'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=100&auto=format&fit=crop')">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="card" data-aos="fade-up" data-delay="0.2" data-category="bags">
+            <div class="card-badge new">New</div>
+            <div class="card-img-wrap">
+                <img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=687&auto=format&fit=crop" alt="Structured Tote Bag">
+                <div class="card-overlay">
+                    <button class="quick-add" onclick="addToCart('Structured Tote Bag',179,'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=100&auto=format&fit=crop')">Quick Add</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-meta"><span class="card-category">Bags</span><div class="card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+                <h3>Structured Tote Bag</h3>
+                <p>Premium leather tote with gold hardware and spacious interior.</p>
+                <div class="card-footer">
+                    <span class="price">$179.00</span>
+                    <button class="add-cart-btn" onclick="addToCart('Structured Tote Bag',179,'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=100&auto=format&fit=crop')">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="card" data-aos="fade-up" data-delay="0.3" data-category="jewelry">
+            <div class="card-img-wrap">
+                <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=687&auto=format&fit=crop" alt="Gold Chain Necklace">
+                <div class="card-overlay">
+                    <button class="quick-add" onclick="addToCart('Gold Chain Necklace',89,'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=100&auto=format&fit=crop')">Quick Add</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-meta"><span class="card-category">Jewelry</span><div class="card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+                <h3>Gold Chain Necklace</h3>
+                <p>18k gold-plated layered chain, perfect for stacking or solo wear.</p>
+                <div class="card-footer">
+                    <span class="price">$89.00</span>
+                    <button class="add-cart-btn" onclick="addToCart('Gold Chain Necklace',89,'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=100&auto=format&fit=crop')">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROMO BANNER -->
+<section class="promo-banner">
+    <div class="promo-orb promo-orb-1"></div>
+    <div class="promo-orb promo-orb-2"></div>
+    <div class="promo-content" data-aos="zoom-in">
+        <h2>Up to <span class="gradient-text">40% OFF</span> this week</h2>
+        <p>Limited time deals on selected pieces. Don't sleep on it.</p>
+        <a href="#products" class="btn btn-primary">Shop the Sale</a>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+    <div class="about-img" data-aos="fade-right">
+        <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1470&auto=format&fit=crop" alt="About Esha's Fashion">
+        <div class="about-img-badge">Est. 2020</div>
+    </div>
+    <div class="about-content" data-aos="fade-left">
+        <span class="eyebrow">Our Story</span>
+        <h2>About <span class="gradient-text">Us</span></h2>
+        <p>Esha's Fashion is a luxury fashion brand inspired by modern aesthetics, timeless beauty and elegant styling. We believe fashion should feel artistic, premium and expressive.</p>
+        <ul class="about-list">
+            <li data-aos="fade-left" data-delay="0.1">Sustainably sourced materials</li>
+            <li data-aos="fade-left" data-delay="0.2">Designed by independent artists</li>
+            <li data-aos="fade-left" data-delay="0.3">Ships worldwide in 3 to 5 days</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary">Get in Touch</a>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+    <h2 class="section-title reveal-title">What people are <span class="gradient-text">saying</span></h2>
+    <div class="testimonial-grid">
+        <div class="testimonial-card" data-aos="fade-up" data-delay="0">
+            <div class="reviewer-row">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face" alt="Maya">
+                <div><span class="reviewer-name">Maya S.</span><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+            </div>
+            <p>"Absolutely obsessed with my order. The quality is unreal and it arrived so fast."</p>
+            <span class="reviewer">@maya.styles</span>
+        </div>
+        <div class="testimonial-card" data-aos="fade-up" data-delay="0.15">
+            <div class="reviewer-row">
+                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=48&h=48&fit=crop&crop=face" alt="Zara">
+                <div><span class="reviewer-name">Zara F.</span><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+            </div>
+            <p>"Esha's Fashion is literally my go-to. Every piece feels so luxe and unique."</p>
+            <span class="reviewer">@zara.fits</span>
+        </div>
+        <div class="testimonial-card" data-aos="fade-up" data-delay="0.3">
+            <div class="reviewer-row">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=48&h=48&fit=crop&crop=face" alt="Nova">
+                <div><span class="reviewer-name">Nova L.</span><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
+            </div>
+            <p>"Got so many compliments wearing their exclusive picks. 10/10 would recommend."</p>
+            <span class="reviewer">@nova.looks</span>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+    <div class="contact-inner" data-aos="zoom-in">
+        <span class="eyebrow">Stay Connected</span>
+        <h2>Connect <span class="gradient-text">With Us</span></h2>
+        <p>Follow us for daily drops, styling inspo, and exclusive deals.</p>
+        <p class="insta-handle">@eshasfashion</p>
+        <a href="https://instagram.com" class="btn btn-primary">Visit Instagram</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-top">
+        <div class="footer-brand" data-aos="fade-up">
+            <h3 class="logo">Esha's Fashion</h3>
+            <p>Luxury fashion for modern souls.</p>
+        </div>
+        <div class="footer-links" data-aos="fade-up" data-delay="0.1">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#products">Products</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+        <div class="footer-links" data-aos="fade-up" data-delay="0.2">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Shipping Policy</a></li>
+                <li><a href="#">Returns</a></li>
+                <li><a href="#">Size Guide</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>2025 Esha's Fashion. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+var cart = [];
+var couponApplied = false;
+var COUPON_CODE = 'ESHH1008';
+var DISCOUNT_RATE = 0.15;
+
+/* ---- CART ---- */
+function openCart() {
+    document.getElementById('cartDrawer').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+    document.getElementById('cartDrawer').classList.remove('open');
+    document.getElementById('cartOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' toast-' + type : '');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function() { t.className = 'toast'; }, 2800);
+}
+
+function addToCart(name, price, img) {
+    var existing = null;
+    for (var i = 0; i < cart.length; i++) { if (cart[i].name === name) { existing = cart[i]; break; } }
+    if (existing) { existing.qty++; } else { cart.push({ name: name, price: price, img: img, qty: 1 }); }
+    updateCartUI();
+    openCart();
+    showToast(name + ' added to cart', 'success');
+    /* button feedback */
+    var btns = document.querySelectorAll('.add-cart-btn, .quick-add');
+    for (var b = 0; b < btns.length; b++) {
+        var oc = btns[b].getAttribute('onclick') || '';
+        if (oc.indexOf(name) !== -1) {
+            (function(btn) {
+                var orig = btn.textContent;
+                btn.textContent = 'Added!';
+                btn.classList.add('added');
+                setTimeout(function() { btn.textContent = orig; btn.classList.remove('added'); }, 1500);
+            })(btns[b]);
+        }
+    }
+}
+
+function removeFromCart(name) {
+    cart = cart.filter(function(i) { return i.name !== name; });
+    updateCartUI();
+}
+
+function changeQty(name, delta) {
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].name === name) {
+            cart[i].qty += delta;
+            if (cart[i].qty <= 0) { removeFromCart(name); return; }
+            break;
+        }
+    }
+    updateCartUI();
+}
+
+function applyCoupon() {
+    var val = document.getElementById('couponInput').value.trim().toUpperCase();
+    if (val === COUPON_CODE) {
+        couponApplied = true;
+        document.getElementById('discountRow').style.display = 'flex';
+        document.getElementById('couponInput').style.borderColor = '#22c55e';
+        showToast('Coupon applied! 15% off', 'success');
+        updateCartUI();
+    } else {
+        document.getElementById('couponInput').style.borderColor = '#ec4899';
+        showToast('Invalid coupon code', 'error');
+    }
+}
+
+function updateCartUI() {
+    var subtotal = 0;
+    for (var i = 0; i < cart.length; i++) { subtotal += cart[i].price * cart[i].qty; }
+    var discount = couponApplied ? subtotal * DISCOUNT_RATE : 0;
+    var total = subtotal - discount;
+    var count = 0;
+    for (var i = 0; i < cart.length; i++) { count += cart[i].qty; }
+
+    var countEl = document.getElementById('cartCount');
+    countEl.textContent = count;
+    countEl.style.transform = 'scale(1.5)';
+    setTimeout(function() { countEl.style.transform = ''; }, 300);
+
+    document.getElementById('discountAmount').textContent = '-$' + discount.toFixed(2);
+    document.getElementById('totalPrice').textContent = '$' + total.toFixed(2);
+
+    var empty = document.getElementById('cartEmpty');
+    var footer = document.getElementById('cartFooter');
+    var itemsEl = document.getElementById('cartItems');
+    var existing = itemsEl.querySelectorAll('.cart-item');
+    for (var e = 0; e < existing.length; e++) { existing[e].remove(); }
+
+    if (cart.length === 0) {
+        empty.style.display = 'flex';
+        footer.style.display = 'none';
+        couponApplied = false;
+        document.getElementById('discountRow').style.display = 'none';
+    } else {
+        empty.style.display = 'none';
+        footer.style.display = 'block';
+        for (var c = 0; c < cart.length; c++) {
+            var item = cart[c];
+            var el = document.createElement('div');
+            el.className = 'cart-item';
+            el.innerHTML =
+                '<img src="' + item.img + '" alt="' + item.name + '">' +
+                '<div class="cart-item-info">' +
+                    '<span class="cart-item-name">' + item.name + '</span>' +
+                    '<span class="cart-item-price">$' + (item.price * item.qty).toFixed(2) + '</span>' +
+                    '<div class="qty-controls">' +
+                        '<button onclick="changeQty(\'' + item.name + '\',-1)">-</button>' +
+                        '<span>' + item.qty + '</span>' +
+                        '<button onclick="changeQty(\'' + item.name + '\',1)">+</button>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="remove-item" onclick="removeFromCart(\'' + item.name + '\')">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button>';
+            itemsEl.appendChild(el);
+        }
+    }
+}
+
+/* ---- CHECKOUT ---- */
+function openCheckout() {
+    if (cart.length === 0) { showToast('Your cart is empty', 'error'); return; }
+    closeCart();
+    buildOrderSummary();
+    document.getElementById('checkoutModal').classList.add('open');
+    document.getElementById('checkoutOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeCheckout() {
+    document.getElementById('checkoutModal').classList.remove('open');
+    document.getElementById('checkoutOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function buildOrderSummary() {
+    var subtotal = 0;
+    for (var i = 0; i < cart.length; i++) { subtotal += cart[i].price * cart[i].qty; }
+    var discount = couponApplied ? subtotal * DISCOUNT_RATE : 0;
+    var total = subtotal - discount;
+    var rows = '';
+    for (var i = 0; i < cart.length; i++) {
+        rows += '<div class="summary-row"><span>' + cart[i].name + ' x' + cart[i].qty + '</span><span>$' + (cart[i].price * cart[i].qty).toFixed(2) + '</span></div>';
+    }
+    if (couponApplied) {
+        rows += '<div class="summary-row discount-row-summary"><span>Discount (15%)</span><span>-$' + discount.toFixed(2) + '</span></div>';
+    }
+    rows += '<div class="summary-row total-row"><span>Total</span><span>$' + total.toFixed(2) + '</span></div>';
+    document.getElementById('orderSummary').innerHTML = '<h4>Order Summary</h4>' + rows;
+}
+
+function formatCard(el) {
+    var v = el.value.replace(/\D/g, '').substring(0, 16);
+    el.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+function formatExpiry(el) {
+    var v = el.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length >= 2) { v = v.substring(0, 2) + ' / ' + v.substring(2); }
+    el.value = v;
+}
+
+function placeOrder() {
+    var fields = ['firstName','lastName','email','address','city','zip','cardNum','expiry','cvv'];
+    var valid = true;
+    for (var i = 0; i < fields.length; i++) {
+        var el = document.getElementById(fields[i]);
+        if (!el.value.trim()) { el.style.borderColor = '#ec4899'; valid = false; } else { el.style.borderColor = ''; }
+    }
+    if (!valid) { showToast('Please fill in all fields', 'error'); return; }
+    closeCheckout();
+    cart = [];
+    couponApplied = false;
+    updateCartUI();
+    setTimeout(function() {
+        document.getElementById('successModal').classList.add('open');
+        document.getElementById('successOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }, 300);
+}
+
+function closeSuccess() {
+    document.getElementById('successModal').classList.remove('open');
+    document.getElementById('successOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+/* ---- FILTER ---- */
+function filterProducts(category, tabEl) {
+    document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+    if (tabEl) tabEl.classList.add('active');
+    var cards = document.querySelectorAll('.card');
+    var idx = 0;
+    cards.forEach(function(card) {
+        var match = category === 'all' || card.dataset.category === category;
+        if (match) {
+            card.style.display = 'block';
+            card.style.animation = 'none';
+            card.offsetHeight;
+            card.style.animation = 'popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) ' + (idx * 0.07) + 's both';
+            idx++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    if (!tabEl) { document.querySelector('#products').scrollIntoView({ behavior: 'smooth' }); }
+}
+
+/* ---- SCROLL ---- */
+window.addEventListener('scroll', function() {
+    var nav = document.getElementById('navbar');
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    var doc = document.documentElement;
+    var pct = (window.scrollY / (doc.scrollHeight - doc.clientHeight)) * 100;
+    document.getElementById('scrollProgress').style.width = pct + '%';
+    /* parallax about image */
+    var aboutImg = document.querySelector('.about-img img');
+    if (aboutImg) {
+        var rect = aboutImg.closest('.about-img').getBoundingClientRect();
+        var offset = (window.innerHeight / 2 - rect.top - rect.height / 2) * 0.07;
+        aboutImg.style.transform = 'translateY(' + offset + 'px)';
+    }
+});
+
+/* ---- CURSOR GLOW ---- */
+var glow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', function(e) {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+});
+
+/* ---- SCROLL ANIMATIONS ---- */
+var aosObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting) {
+            var delay = parseFloat(e.target.dataset.delay || 0) * 1000;
+            setTimeout(function() { e.target.classList.add('visible'); }, delay);
+        }
+    });
+}, { threshold: 0.1 });
+document.querySelectorAll('[data-aos]').forEach(function(el) { aosObserver.observe(el); });
+
+/* ---- SECTION TITLE REVEAL ---- */
+var titleObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.4 });
+document.querySelectorAll('.reveal-title').forEach(function(el) { titleObserver.observe(el); });
+
+/* ---- STAT COUNTER ---- */
+var statObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+        if (e.isIntersecting && !e.target.dataset.counted) {
+            e.target.dataset.counted = '1';
+            var target = parseFloat(e.target.dataset.target);
+            var isDecimal = target % 1 !== 0;
+            var start = 0;
+            var duration = 1600;
+            var steps = 60;
+            var inc = target / steps;
+            var step = 0;
+            var timer = setInterval(function() {
+                step++;
+                start += inc;
+                if (step >= steps) { start = target; clearInterval(timer); }
+                e.target.textContent = isDecimal ? start.toFixed(1) : Math.floor(start);
+            }, duration / steps);
+        }
+    });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stat-num').forEach(function(el) { statObserver.observe(el); });
+
+/* ---- MAGNETIC BUTTONS ---- */
+document.querySelectorAll('.btn-primary, .btn-outline').forEach(function(btn) {
+    btn.addEventListener('mousemove', function(e) {
+        var rect = btn.getBoundingClientRect();
+        var x = (e.clientX - rect.left - rect.width / 2) * 0.25;
+        var y = (e.clientY - rect.top - rect.height / 2) * 0.25;
+        btn.style.transform = 'translate(' + x + 'px,' + y + 'px) translateY(-3px)';
+    });
+    btn.addEventListener('mouseleave', function() { btn.style.transform = ''; });
+});
+</script>
+</body>
+</html>
